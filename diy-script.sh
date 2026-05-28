@@ -15,7 +15,7 @@ rm -rf feeds/luci/applications/luci-app-serverchan
 # 2. 核心步骤：追加 kenzok8/small-package 核心第三方软件源
 # =====================================================================
 # 这一步能让编译系统完美抓取 passwall, openclash, aliddns, syncdial 等插件
-echo 'src-git kenzo https://github.com' >> feeds.conf.default
+echo 'src-git kenzo https://github.com/kenzok8/small-package' >> feeds.conf.default
 
 # =====================================================================
 # 3. 稀疏克隆辅助函数（保持原脚本优秀特性，用于抓取零散单包）
@@ -51,6 +51,10 @@ find package/*/ -maxdepth 2 -path "*/Makefile" | xargs -i sed -i 's/PKG_SOURCE_U
 
 # 修改后台本地时间显示格式（让主页看起来更直观美观）
 sed -i 's/os.date()/os.date("%a %Y-%m-%d %H:%M:%S")/g' package/lean/autocore/files/*/index.htm 2>/dev/null || true
+
+#2026.5.29 添加后台地址  对IPV6进行限制
+sed -i 's/192.168.1.1/192.168.123.200/g' package/base-files/files/bin/config_generate
+sed -i 's/auto/disabled/g' package/base-files/files/lib/netifd/proto/dhcpv6.sh
 
 # 取消主题默认强制覆盖行为，保证系统主题切换不会产生后台死锁
 find package/luci-theme-*/* -type f -name '*luci-theme-*' -print -exec sed -i '/set luci.main.mediaurlbase/d' {} \; 2>/dev/null || true
