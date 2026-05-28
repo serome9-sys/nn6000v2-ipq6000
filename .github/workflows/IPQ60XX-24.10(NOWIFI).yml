@@ -55,7 +55,8 @@ jobs:
       working-directory: /workdir
       run: |
         df -hT $GITHUB_WORKSPACE
-        git clone --depth=1 https://github.com openwrt
+        git clone --depth=1 https://github.com/LiBwrt/openwrt-6.x.git openwrt
+
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
 
     - name: Generate Variables(生成变量)
