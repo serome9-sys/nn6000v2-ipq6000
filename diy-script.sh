@@ -56,13 +56,6 @@ sed -i 's/os.date()/os.date("%a %Y-%m-%d %H:%M:%S")/g' package/lean/autocore/fil
 sed -i 's/192.168.1.1/192.168.123.200/g' package/base-files/files/bin/config_generate
 sed -i 's/auto/disabled/g' package/base-files/files/lib/netifd/proto/dhcpv6.sh
 
-# 终极绝杀：直接在脚本里强行将无线 wpad 组件从配置中剔除，阻断编译死锁
-echo "CONFIG_PACKAGE_wpad-openssl=n" >> .config
-echo "CONFIG_PACKAGE_wpad-basic-openssl=n" >> .config
-echo "CONFIG_PACKAGE_wpad-full-openssl=n" >> .config
-echo "CONFIG_PACKAGE_hostapd-common=n" >> .config
-
-
 # 取消主题默认强制覆盖行为，保证系统主题切换不会产生后台死锁
 find package/luci-theme-*/* -type f -name '*luci-theme-*' -print -exec sed -i '/set luci.main.mediaurlbase/d' {} \; 2>/dev/null || true
 
