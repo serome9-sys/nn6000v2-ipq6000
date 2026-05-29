@@ -1,22 +1,12 @@
-#
-# Copyright (c) 2019-2020 P3TERX <https://p3terx.com>
-#
-# This is free software, licensed under the MIT License.
-# See /LICENSE for more information.
-#
-# https://github.com
-# Description: Build OpenWrt using GitHub Actions
-#
-
-name: IPQ60XX-23.05(NOWIFI)
+name: IPQ60XX-24.10(NOWIFI)
 
 on:
   repository_dispatch:
   workflow_dispatch:
 
 env:
-  REPO_URL: https://github.com/immortalwrt/immortalwrt.git
-  REPO_BRANCH: openwrt-23.05
+  REPO_URL: https://github.com/LiBwrt/openwrt-6.x.git
+  REPO_BRANCH: openwrt-24.10
   CONFIG_FILE: configs/ipq60xx-nowifi.config
   DIY_SCRIPT: diy-script.sh
   CLASH_KERNEL: arm64
@@ -51,20 +41,20 @@ jobs:
         df -hT
         echo "========================================================================"
 
-    - name: Clone Source Code(克隆源代码)
+    - name: Clone Source Code
       working-directory: /workdir
       run: |
         df -hT $GITHUB_WORKSPACE
         git clone --depth=1 -b ${{ env.REPO_BRANCH }} ${{ env.REPO_URL }} openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
 
-    - name: Generate Variables(生成变量)
+    - name: Generate Variables
       id: var
       run: |
         echo "version=$(date +%Y%m%d%H%M)" >> $GITHUB_OUTPUT
         echo "status=success" >> $GITHUB_OUTPUT
 
-    - name: Cache Toolchain(缓存工具链)
+    - name: Cache Toolchain
       uses: actions/cache@v4
       with:
         path: /workdir/openwrt/staging_dir/host
@@ -83,22 +73,21 @@ jobs:
         chmod +x $GITHUB_WORKSPACE/$DIY_SCRIPT
         $GITHUB_WORKSPACE/$DIY_SCRIPT
 
-    - name: Load Custom Configuration(加载自定义配置)
+    - name: Load Custom Configuration
       run: |
-         ls -l ${{ github.workspace }}/configs/
-         cp -f ${{ github.workspace }}/configs/ipq60xx-nowifi.config openwrt/.config
+        cp -f ${{ github.workspace }}/$CONFIG_FILE openwrt/.config
+        # 验证目标平台是否正确
+        grep -q 'CONFIG_TARGET_qualcommax_ipq60xx=y' openwrt/.config || { echo "ERROR: Target not set correctly!"; exit 1; }
 
-
-    - name: Download DL Package(下载DL软件包)
+    - name: Download DL Package
       id: package
       run: |
         cd openwrt
         make defconfig
         make download -j8
-        find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
 
-    - name: Compile Firmware(开始编译固件)
+    - name: Compile Firmware
       id: compile
       run: |
         cd openwrt
@@ -117,14 +106,14 @@ jobs:
         df -hT
         echo "========================================================================"
 
-    - name: Upload Bin Directory(上传bin文件夹)
+    - name: Upload Bin Directory
       uses: actions/upload-artifact@v4
       if: steps.compile.outputs.status == 'success' && !cancelled()
       with:
         name: OpenWrt_bin${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
         path: openwrt/bin
 
-    - name: Organize Files(整理输出固件)
+    - name: Organize Files
       id: organize
       if: steps.compile.outputs.status == 'success' && !cancelled()
       run: |
@@ -133,7 +122,7 @@ jobs:
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "status=success" >> $GITHUB_OUTPUT
 
-    - name: Upload Firmware(上传固件)
+    - name: Upload Firmware
       uses: actions/upload-artifact@v4
       if: steps.organize.outputs.status == 'success' && !cancelled()
       with:
