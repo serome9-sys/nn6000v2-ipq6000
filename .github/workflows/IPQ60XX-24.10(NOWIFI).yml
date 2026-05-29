@@ -85,10 +85,8 @@ jobs:
 
     - name: Load Custom Configuration(加载自定义配置)
       run: |
-        echo "Looking for config file: $CONFIG_FILE"
-        ls -l $CONFIG_FILE || { echo "ERROR: $CONFIG_FILE not found!"; exit 1; }
-        [ -d files ] && cp -r files openwrt/
-        [ -f $CONFIG_FILE ] && cp $CONFIG_FILE openwrt/.config
+         ls -l ${{ github.workspace }}/configs/
+         cp -f ${{ github.workspace }}/configs/ipq60xx-nowifi.config openwrt/.config
 
 
     - name: Download DL Package(下载DL软件包)
