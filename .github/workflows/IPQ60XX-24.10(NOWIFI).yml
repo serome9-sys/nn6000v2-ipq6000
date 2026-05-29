@@ -51,12 +51,11 @@ jobs:
         df -hT
         echo "========================================================================"
 
-    - name: Clone Source Code(克隆源代码)
+     - name: Clone Source Code(克隆源代码)
       working-directory: /workdir
       run: |
         df -hT $GITHUB_WORKSPACE
-        git clone --depth=1 https://github.com/LiBwrt/openwrt-6.x.git openwrt
-
+        git clone --depth=1 -b ${{ env.REPO_BRANCH }} ${{ env.REPO_URL }} openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
 
     - name: Generate Variables(生成变量)
@@ -72,7 +71,12 @@ jobs:
         key: ${{ runner.os }}-toolchain-${{ env.REPO_BRANCH }}-${{ steps.var.outputs.version }}
         restore-keys: |
           ${{ runner.os }}-toolchain-${{ env.REPO_BRANCH }}-
-
+     
+     - name: Clean Stale Build Artifacts
+      run: |
+         cd /workdir/openwrt
+           rm -rf build_dir staging_dir/target* tmp
+    
     - name: Install Feeds
       run: |
         cd openwrt
@@ -81,7 +85,7 @@ jobs:
 
     - name: Load Custom Configuration(加载自定义配置)
       run: |
-       cp -f /home/runner/work/nn6000v2-ipq6000/nn6000v2-ipq6000/configs/ipq60xx-nowifi.config /workdir/openwrt/.config || true
+       cp -f ${{ github.workspace }}/configs/ipq60xx-nowifi.config /workdir/openwrt/.config || true
 
     - name: Download DL Package(下载DL软件包)
       id: package
